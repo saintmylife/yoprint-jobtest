@@ -1,0 +1,35 @@
+<?php
+
+namespace {{ customServiceNamespace }};
+
+use App\Modules\{{ pathNamespace }}\{{ pathNamespace }}Dto;
+use App\Modules\{{ pathNamespace }}\Domain\{{ pathNamespace }}Filter;
+use App\Modules\{{ pathNamespace }}\Repository\{{ pathNamespace }}RepoInterface;
+use App\Modules\Base\Domain\BaseService;
+use App\Modules\Common\Domain\Payload;
+
+class {{ service }} extends BaseService
+{
+    private $filter;
+    private $repo;
+
+    public function __construct({{ pathNamespace }}Filter $filter, {{ pathNamespace }}RepoInterface $repo)
+    {
+        $this->filter = $filter;
+        $this->repo = $repo;
+    }
+
+    public function __invoke(array $data): Payload
+    {
+        ${{pathNamespace}}Dto = $this->makeDto($data, new {{ pathNamespace }}Dto);
+
+        if (!$this->filter->forInsert(${{pathNamespace}}Dto)) {
+            $messages = $this->filter->getMessages();
+            return $this->newPayload(Payload::STATUS_NOT_VALID, compact('data', 'messages'));
+        }
+
+        $create = $this->repo->create(${{pathNamespace}}Dto->getData());
+
+        return $this->newPayload(Payload::STATUS_CREATED, compact('create'));
+    }
+}
